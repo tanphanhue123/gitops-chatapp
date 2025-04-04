@@ -1,0 +1,123 @@
+# Name of the application.
+applicationName: "db"
+
+namespaceOverride: "app"
+
+deployment:
+  reloadOnChange: false
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  replicas: 1
+  env:
+    MYSQL_ROOT_PASSWORD:
+      valueFrom:
+        secretKeyRef:
+          name: app-secret
+          key: DB_ROOT_PASSWORD
+    MYSQL_DATABASE:
+      valueFrom:
+        secretKeyRef:
+          name: app-secret
+          key: DB_DATABASE
+    MYSQL_USER:
+      valueFrom:
+        secretKeyRef:
+          name: app-secret
+          key: DB_USERNAME
+    MYSQL_PASSWORD:
+      valueFrom:
+        secretKeyRef:
+          name: app-secret
+          key: DB_PASSWORD
+  volumes:
+    mysql-storage:
+      persistentVolumeClaim:
+        claimName: mysql-pvc
+  volumeMounts:
+      mysql-storage:
+         mountPath: /var/lib/mysql/
+  image:
+    repository: mysql
+    tag: "5.7"
+    pullPolicy: IfNotPresent
+  # readinessProbe:
+  #   enabled: true
+  #   failureThreshold: 3
+  #   periodSeconds: 30
+  #   successThreshold: 1
+  #   timeoutSeconds: 30  
+  #   initialDelaySeconds: 60
+  #   exec:
+  #     command:
+  #       - mysqladmin
+  #       - ping
+  #       - "-h"
+  #       - "127.0.0.1"
+
+  # Resources to be defined for pod
+  resources:
+    limits:
+      memory: 256Mi
+      cpu: 0.5
+    requests:
+      memory: 256Mi
+      cpu: 0.5
+  # Security Context at Container Level
+  # containerSecurityContext:
+  #   readOnlyRootFilesystem: false
+  #   runAsNonRoot: false
+  # Security Context for the pod
+  securityContext:
+    fsGroup: 999
+  # Command for primary container
+  # command: []
+  # Args for primary contaner
+  args: ["--ignore-db-dir=lost+found"]
+  # List of ports for the primary container
+  ports:
+  - containerPort: 3306
+    name: http
+    protocol: TCP
+  # Graceful termination timeout
+  terminationGracePeriodSeconds: 120
+
+# Add Storage volumes to the pods
+persistence:
+  enabled: true
+  mountPVC: false
+  mountPath: "/"
+  name: "mysql-pvc"
+  accessMode: ReadWriteOnce
+  storageClass: "gp2"
+  storageSize: 10Gi
+
+# Service object for servicing pods
+service:
+  ports:
+    - port: 3306
+      name: http
+      protocol: TCP
+      targetPort: 3306
+  type: ClusterIP
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+         type: Utilization
+         averageUtilization: 60
+  - type: Resource
+    resource:
+      name: memory
+      target:
+         type: Utilization
+         averageUtilization: 60
+

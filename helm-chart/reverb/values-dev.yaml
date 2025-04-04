@@ -1,0 +1,74 @@
+applicationName: "reverb"
+
+namespaceOverride: "app"
+
+deployment:
+  reloadOnChange: false
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  replicas: 1
+  envFrom:
+    app-configmap:
+      type: configmap
+      name: app-configmap
+    app-secret:
+      type: secret
+      name: app-secret
+  image:
+    repository: public.ecr.aws/g7j1x0t3/laravel-app
+    tag: latest
+    pullPolicy: Always
+  resources:
+    limits:
+      memory: 256Mi
+      cpu: 0.5
+    requests:
+      memory: 128Mi
+      cpu: 0.1
+  # Security Context at Container Level
+  containerSecurityContext:
+    readOnlyRootFilesystem: false
+    runAsNonRoot: false
+  # Security Context for the pod
+  securityContext:
+    fsGroup: 2000
+  # Command for primary container
+  command: []
+  # Args for primary contaner
+  args: ["php", "artisan", "reverb:start"]
+  ports:
+  - containerPort: 8080
+    name: http
+    protocol: TCP
+  terminationGracePeriodSeconds: 120
+
+# Service
+service:
+  ports:
+    - port: 8080
+      name: http
+      protocol: TCP
+      targetPort: 8080
+  type: ClusterIP
+
+# Autoscaling
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+         type: Utilization
+         averageUtilization: 60
+  - type: Resource
+    resource:
+      name: memory
+      target:
+         type: Utilization
+         averageUtilization: 60
