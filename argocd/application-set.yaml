@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: chatapp-appset
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+  - git:
+      repoURL: https://github.com/tanphanhue123/gitops-chatapp.git
+      revision: main
+      directories:
+      - path: helm-chart/*
+  template:      
+    metadata:
+      name: '{{ .path.basename }}'
+    spec:
+      project: default
+      sources:
+        - repoURL: https://github.com/tanphanhue123/gitops-chatapp.git
+          path: '{{ .path.path }}'
+          targetRevision: main
+          helm:
+            valueFiles:
+            - values-dev.yaml
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: 'app'
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true  
+        automated: 
+          prune: true 
+          selfHeal: true 
