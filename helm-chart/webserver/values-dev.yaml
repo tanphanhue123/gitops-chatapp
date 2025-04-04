@@ -22,16 +22,16 @@ deployment:
     repository: public.ecr.aws/g7j1x0t3/nginx
     tag: latest
     pullPolicy: Always
-  livenessProbe:
-    enabled: true
-    failureThreshold: 3
-    periodSeconds: 10
-    successThreshold: 1
-    timeoutSeconds: 1
-    initialDelaySeconds: 10
-    httpGet:
-      path: /
-      port: 80
+  # livenessProbe:
+  #   enabled: true
+  #   failureThreshold: 3
+  #   periodSeconds: 10
+  #   successThreshold: 1
+  #   timeoutSeconds: 1
+  #   initialDelaySeconds: 10
+  #   httpGet:
+  #     path: /
+  #     port: 80
   lifecycle:
     postStart:
       exec:
