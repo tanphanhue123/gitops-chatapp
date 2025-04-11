@@ -3,6 +3,8 @@ applicationName: "db"
 
 namespaceOverride: "app"
 
+#Deployment
+
 deployment:
   reloadOnChange: false
   strategy:
@@ -43,21 +45,6 @@ deployment:
     repository: mysql
     tag: "5.7"
     pullPolicy: IfNotPresent
-  # readinessProbe:
-  #   enabled: true
-  #   failureThreshold: 3
-  #   periodSeconds: 30
-  #   successThreshold: 1
-  #   timeoutSeconds: 30  
-  #   initialDelaySeconds: 60
-  #   exec:
-  #     command:
-  #       - mysqladmin
-  #       - ping
-  #       - "-h"
-  #       - "127.0.0.1"
-
-  # Resources to be defined for pod
   resources:
     limits:
       memory: 256Mi
@@ -65,26 +52,16 @@ deployment:
     requests:
       memory: 256Mi
       cpu: 0.5
-  # Security Context at Container Level
-  # containerSecurityContext:
-  #   readOnlyRootFilesystem: false
-  #   runAsNonRoot: false
-  # Security Context for the pod
   securityContext:
     fsGroup: 999
-  # Command for primary container
-  # command: []
-  # Args for primary contaner
   args: ["--ignore-db-dir=lost+found"]
-  # List of ports for the primary container
   ports:
   - containerPort: 3306
     name: http
     protocol: TCP
-  # Graceful termination timeout
   terminationGracePeriodSeconds: 120
 
-# Add Storage volumes to the pods
+# PV && PVC
 persistence:
   enabled: true
   mountPVC: false
@@ -94,7 +71,7 @@ persistence:
   storageClass: "gp2"
   storageSize: 10Gi
 
-# Service object for servicing pods
+# Service 
 service:
   ports:
     - port: 3306

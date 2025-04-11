@@ -2,6 +2,8 @@ applicationName: "scheduler"
 
 namespaceOverride: "app"
 
+#Deployment
+
 deployment:
   reloadOnChange: false
   strategy:
@@ -18,7 +20,7 @@ deployment:
       type: secret
       name: app-secret
   image:
-    repository: public.ecr.aws/g7j1x0t3/laravel-app
+    repository: 034362049682.dkr.ecr.ap-southeast-1.amazonaws.com/chatapp
     tag: latest
     pullPolicy: Always
   resources:
@@ -28,16 +30,12 @@ deployment:
     requests:
       memory: 128Mi
       cpu: 0.1
-  # Security Context at Container Level
   containerSecurityContext:
     readOnlyRootFilesystem: false
     runAsNonRoot: false
-  # Security Context for the pod
   securityContext:
     fsGroup: 2000
-  # Command for primary container
   command: ["sh", "-c", "while true; do php artisan schedule:run; sleep 60; done"]
-  # Args for primary contaner
   args: []
   terminationGracePeriodSeconds: 120
 

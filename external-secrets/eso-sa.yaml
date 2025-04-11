@@ -5,4 +5,3 @@
 #     eks.amazonaws.com/role-arn: arn:aws:iam::034362049682:role/lab-dev-external-secret-role
 #   name: es-sa
 #   namespace: app
-  

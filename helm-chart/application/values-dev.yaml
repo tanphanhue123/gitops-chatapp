@@ -3,6 +3,7 @@ applicationName: "app"
 
 namespaceOverride: "app"
 
+#Deployment
 deployment:
   reloadOnChange: false
   strategy:
@@ -26,7 +27,7 @@ deployment:
       shared-storage:
          mountPath: /var/www/html
   image:
-    repository: public.ecr.aws/g7j1x0t3/laravel-app
+    repository: 034362049682.dkr.ecr.ap-southeast-1.amazonaws.com/chatapp
     tag: latest
     pullPolicy: IfNotPresent
   resources:
@@ -36,18 +37,13 @@ deployment:
     requests:
       memory: 256Mi
       cpu: 0.5
-  # Security Context at Container Level
   containerSecurityContext:
     readOnlyRootFilesystem: false
     runAsNonRoot: false
-  # Security Context for the pod
   securityContext:
     fsGroup: 2000
-  # Command for primary container
   command: []
-  # Args for primary contaner
   args: []
-  # List of ports for the primary container
   ports:
   - containerPort: 9000
     name: php-fpm
@@ -60,7 +56,7 @@ deployment:
   additionalContainers:
   - name: webserver
     image: public.ecr.aws/g7j1x0t3/nginx:latest
-    imagePullPolicy: IfNotPresent
+    imagePullPolicy: Always
     volumeMounts:
     - name: shared-storage
       mountPath: /var/www/html
@@ -75,7 +71,7 @@ deployment:
     securityContext:
       fsGroup: 2000
 
-# Add Storage volumes to the pods
+# PVC && PVC
 persistence:
   enabled: true
   mountPVC: false
@@ -85,7 +81,7 @@ persistence:
   storageClass: "gp2"
   storageSize: 5Gi
 
-# Service object for servicing pods
+# Service
 service:
   ports:
     - port: 80
@@ -94,7 +90,7 @@ service:
       targetPort: 80
   type: ClusterIP
 
-# Additional ConfigMaps
+# ConfigMaps
 configMap:
   enabled: true
   files:
@@ -169,15 +165,10 @@ autoscaling:
          type: Utilization
          averageUtilization: 60
 
-# Ingress object for exposing services
+# Ingress
 ingress:
   enabled: true
-
-  # Name of the ingress class
   ingressClassName: alb
-
-  # List of host addresses to be exposed by this Ingress
-
   hosts:
     - host: tanphanhue.shop
       paths:
@@ -185,7 +176,6 @@ ingress:
         pathType: Prefix
         serviceName: app
         servicePort: http
-  # Add annotations to this Ingress
   annotations:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
