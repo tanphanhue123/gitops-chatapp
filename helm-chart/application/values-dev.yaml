@@ -60,7 +60,7 @@ deployment:
   additionalContainers:
   - name: webserver
     image: public.ecr.aws/g7j1x0t3/nginx:latest
-    imagePullPolicy: IfNotPresent
+    imagePullPolicy: Always
     volumeMounts:
     - name: shared-storage
       mountPath: /var/www/html
