@@ -29,24 +29,13 @@ deployment:
     repository: public.ecr.aws/g7j1x0t3/laravel-app
     tag: latest
     pullPolicy: IfNotPresent
-  # livenessProbe:
-  #   enabled: true
-  #   failureThreshold: 3
-  #   periodSeconds: 10
-  #   successThreshold: 1
-  #   timeoutSeconds: 1
-  #   initialDelaySeconds: 10
-  #   httpGet:
-  #     path: /
-  #     port: 9000
-  # Resources to be defined for pod
   resources:
     limits:
       memory: 256Mi
       cpu: 0.5
     requests:
-      memory: 128Mi
-      cpu: 0.1
+      memory: 256Mi
+      cpu: 0.5
   # Security Context at Container Level
   containerSecurityContext:
     readOnlyRootFilesystem: false
@@ -61,15 +50,30 @@ deployment:
   # List of ports for the primary container
   ports:
   - containerPort: 9000
-    name: http
+    name: php-fpm
     protocol: TCP
-  # Graceful termination timeout
   terminationGracePeriodSeconds: 120
-  # Container lifecycle management for graceful startup and shutdown procedures
   lifecycle:
     postStart:
       exec:
         command: ["/bin/sh", "-c", "cp -r /app/. /var/www/html"]
+  additionalContainers:
+  - name: webserver
+    image: public.ecr.aws/g7j1x0t3/nginx:latest
+    imagePullPolicy: IfNotPresent
+    volumeMounts:
+    - name: shared-storage
+      mountPath: /var/www/html
+    ports:
+      - containerPort: 80
+        name: http
+        protocol: TCP
+    lifecycle:
+      postStart:
+        exec:
+          command: ["/bin/sh", "-c", "chmod -R guo+w /var/www/html/storage"]
+    securityContext:
+      fsGroup: 2000
 
 # Add Storage volumes to the pods
 persistence:
@@ -84,10 +88,10 @@ persistence:
 # Service object for servicing pods
 service:
   ports:
-    - port: 9000
+    - port: 80
       name: http
       protocol: TCP
-      targetPort: 9000
+      targetPort: 80
   type: ClusterIP
 
 # Additional ConfigMaps
@@ -164,3 +168,31 @@ autoscaling:
       target:
          type: Utilization
          averageUtilization: 60
+
+# Ingress object for exposing services
+ingress:
+  enabled: true
+
+  # Name of the ingress class
+  ingressClassName: alb
+
+  # List of host addresses to be exposed by this Ingress
+
+  hosts:
+    - host: tanphanhue.shop
+      paths:
+      - path: /
+        pathType: Prefix
+        serviceName: app
+        servicePort: http
+  # Add annotations to this Ingress
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/load-balancer-name: pet-dev-alb-chatapp
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}, {"HTTPS":443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-southeast-1:034362049682:certificate/660d4feb-1023-4418-884a-2abbcb9e613b
+    alb.ingress.kubernetes.io/group.name: app
+    alb.ingress.kubernetes.io/group.order: '10'
+    alb.ingress.kubernetes.io/healthcheck-path: /login
