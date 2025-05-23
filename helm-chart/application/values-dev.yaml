@@ -28,7 +28,7 @@ deployment:
          mountPath: /var/www/html
   image:
     repository: 034362049682.dkr.ecr.ap-southeast-1.amazonaws.com/chatapp
-    tag: "aa0199b9"
+    tag: "8fc832e7"
     pullPolicy: IfNotPresent
   resources:
     limits:
