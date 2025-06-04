@@ -11,7 +11,7 @@ deployment:
     rollingUpdate:
       maxSurge: 25%
       maxUnavailable: 25%
-  replicas: 1
+  # replicas: 1
   envFrom:
     app-configmap:
       type: configmap

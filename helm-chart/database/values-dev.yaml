@@ -12,7 +12,7 @@ deployment:
     rollingUpdate:
       maxSurge: 25%
       maxUnavailable: 25%
-  replicas: 1
+  # replicas: 1
   env:
     MYSQL_ROOT_PASSWORD:
       valueFrom:
