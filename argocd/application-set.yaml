@@ -15,6 +15,10 @@ spec:
   template:      
     metadata:
       name: '{{ .path.basename }}'
+      annotations:
+        notifications.argoproj.io/subscribe.on-deployed.slack: alerts
+        notifications.argoproj.io/subscribe.on-sync-failed.slack: alerts
+        notifications.argoproj.io/subscribe.on-sync-succeeded.slack: alerts
     spec:
       project: default
       sources:
