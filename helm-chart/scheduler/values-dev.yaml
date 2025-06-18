@@ -21,7 +21,7 @@ deployment:
       name: app-secret
   image:
     repository: 034362049682.dkr.ecr.ap-southeast-1.amazonaws.com/chatapp
-    tag: "843f2bc4"
+    tag: "f665de8d"
     pullPolicy: Always
   resources:
     limits:
